@@ -1,0 +1,128 @@
+# Randomized Quicksort Visualizer — Project Specification
+
+## Goal
+
+Build a website that visualizes **sequential randomized quicksort** on a sequence of **16 distinct integers between 1 and 99, inclusive**. Users can request a random sequence or enter their own. Each batch runs randomized quicksort **10 independent times on the same sequence**, allowing users to compare how pivot choices affect the recursion tree and comparison count.
+
+The website also displays site-wide statistics for all successful runs **since the server started**.
+
+## Core Features
+
+1. **Generate input:** A **Generate 16 Numbers** button requests 16 distinct random integers from 1–99 from the backend. The returned numbers fill the frontend input field. Generating numbers does not change the site-wide statistics.
+2. **Edit input:** Users can edit the sequence before sorting. The input must contain exactly 16 distinct integers in the range 1–99.
+3. **Run a batch:** Clicking **Run 10 Sorts** sends the sequence to the backend. The backend validates it, performs 10 independent sequential quicksort runs on that **same sequence**, and returns all 10 results in one response.
+4. **Compare runs:** The frontend first displays a list of the 10 runs and each run’s total comparison count. Users select a run to inspect its tree. **Only the selected tree is rendered**, and the frontend creates its visible tree when the run is selected.
+5. **Site-wide statistics:** Display:
+   - Total successful quicksort runs \(R\)
+   - Total comparisons \(C\)
+   - Average comparisons per run \(C/R\), displayed as `—` when \(R=0\)
+
+Each run returned by the backend includes its **sorted sequence**, **total comparison count**, and **JSON recursion tree**.
+
+## Current Batch and Tree Lifetime
+
+The frontend holds all 10 returned results, including their tree data, in the current webpage’s **JavaScript memory**. It does not render all 10 trees immediately.
+
+Starting another batch replaces the previous batch. Generating or editing a new input clears the displayed batch so its trees are not mistaken for results from the new sequence. Refreshing or closing the page also clears the batch.
+
+Users may request any number of batches. The backend does **not** store trees, input histories, or individual run histories. Selecting a result uses data already returned to the frontend; it makes no new sorting request and does not update statistics.
+
+## Randomness and Comparison Counting
+
+At every recursive call containing at least two elements, the backend chooses a **position uniformly at random** from the current subarray. It removes the element at that position as the pivot, then partitions the remaining elements in **one pass**. The relative order of elements within the left and right partitions is preserved.
+
+For a recursive subarray of size \(m\), the pivot is compared once with each of the other \(m-1\) elements, contributing **\(m-1\)** comparisons. Empty and one-element subarrays contribute zero. A run’s total comparison count is the sum across its recursive calls.
+
+Do not implement partitioning with separate `<`, `>`, and `==` filters while claiming only one comparison per element. Inputs contain distinct values, so each remaining element goes either to the left or to the right.
+
+After **all 10 runs in a batch** complete successfully, the backend increases \(R\) by **10** and increases \(C\) by the sum of those 10 runs’ comparison counts. It then calculates the updated average as \(C/R\). A failed or invalid batch changes neither counter.
+
+Every valid run has 16 distinct values. Therefore, comparison counts from different submitted sequences can be meaningfully included in the same site-wide average.
+
+## Tree Data and Display
+
+Each JSON tree node contains:
+
+- `subarray`: the sequence in its **original order at the start of that recursive call**
+- `pivot`: the element selected at that node
+- `left` and `right`: the child subtrees
+
+An empty subarray is represented by `null`. A one-element subarray is represented by a leaf node.
+
+The **backend returns tree data, while the frontend generates the visible tree**. Use a simple layout showing each node’s subarray, a clearly highlighted pivot, and **Left / Right** labels or indentation to make branch relationships clear.
+
+Do **not** display comparison counts at individual nodes or levels. Show each run’s **total** comparison count in the list of 10 runs and beside the selected tree. The frontend renders **one tree at a time**, only after its run is selected.
+
+## Algorithm Pseudocode
+
+```text
+fun quicksort(S : sequence<T>) -> (sequence<T>, tree, int):
+    if length(S) == 0:
+        return ([], null, 0)
+
+    if length(S) == 1:
+        return (S, Node(subarray=S, pivot=S[0]), 0)
+
+    i = uniform_random_index(0, length(S) - 1)
+    p = S[i]
+    L, R = partition_once(S with the element at index i removed,
+                          fn x => x < p)
+    // Compare each remaining element with p exactly once.
+
+    sortedL, treeL, countL = quicksort(L)
+    sortedR, treeR, countR = quicksort(R)
+
+    tree = Node(subarray=S, pivot=p, left=treeL, right=treeR)
+    comparisons = (length(S) - 1) + countL + countR
+    return (sortedL + [p] + sortedR, tree, comparisons)
+```
+
+The backend runs this function **sequentially** 10 times for each valid batch request. The 10 runs make independent random pivot choices. No parallel implementation or reproducible seed is required.
+
+## API and Error Handling
+
+Suggested endpoints:
+
+- `GET /api/random-sequence`: Return 16 distinct random integers from 1–99. This endpoint does not update statistics.
+- `GET /api/stats`: Return the current site-wide \(R\), \(C\), and average.
+- `POST /api/sort-batch`: Accept a JSON sequence, validate it, run quicksort 10 times, and return the 10 results and updated site-wide statistics.
+
+The sorting endpoint rejects missing input, the wrong number of values, non-integers, out-of-range values, and duplicates with **HTTP 400 and a helpful JSON error**. Invalid requests do not update the counters.
+
+The frontend uses `fetch()` and displays validation errors, server errors, and network failures to the user rather than failing silently.
+
+## Architecture and Deployment
+
+- **Backend:** Python with Flask, deployed as a **Render Web Service**. It performs the sorting, generates JSON tree data, validates requests, and maintains the shared counters \(R\) and \(C\) in process memory.
+- **Frontend:** HTML/CSS/JavaScript, ultimately hosted on **GitHub Pages**. It sends requests to Render, displays the statistics and run list, and renders the selected tree.
+- **GitHub:** The final submission has **separate backend and frontend repositories**. The backend repository contains a **`requirements.txt` file** listing Flask, Gunicorn, and any other Python dependencies used.
+
+**During development, both parts may be kept in one repository** under separate `frontend/` and `backend/` folders. **I will separate them into two GitHub repositories before submission.**
+
+Render’s Build Command is `pip install -r requirements.txt`. Its Start Command uses **one Gunicorn worker**, for example `gunicorn --workers 1 app:app` if the Flask application is named `app` in `app.py`. Configure CORS to allow the GitHub Pages frontend to call the Render backend, as well as the local frontend origin during development.
+
+## Statistics Lifetime
+
+The site-wide counters \(R\) and \(C\) are shared while the Render server process is alive. **They reset when that process restarts**, including after an idle shutdown or redeployment. The interface must label these statistics **“Since server start”**, not “lifetime” statistics.
+
+No database, login system, persistent server storage, API key, or other secret is required. The GitHub repositories store source code, not the changing statistics.
+
+## Testing, Documentation, and Submission
+
+Test the backend locally before connecting the frontend. Then test the frontend and backend together locally before deploying. Check at least:
+
+- A valid sequence produces 10 sorted results and 10 trees.
+- Each returned sequence is sorted, and each tree represents its corresponding run.
+- One successful batch increases \(R\) by **10** and \(C\) by the sum of the 10 displayed comparison counts.
+- Generating numbers and selecting an existing tree do **not** update \(R\) or \(C\).
+- Empty, duplicate, non-integer, out-of-range, and incorrect-length inputs display useful errors without changing the statistics.
+- The frontend displays an error if the backend is unavailable.
+- A new batch replaces the previous batch, and refreshing the page clears the frontend’s batch.
+
+Write a README explaining what the backend does, how to run both parts locally, how the frontend calls the backend, the deployed URLs, the fact that no secrets are used, and why statistics reset after a server restart.
+
+
+
+## Initial Scope
+
+Keep the interface simple. Do not add per-comparison animation, per-node comparison labels, accounts, persistent histories, seed controls, or parallel quicksort. Prioritize correct counting, clear Left / Right branches, useful errors, working frontend–backend communication, and completing the deployment and submission.

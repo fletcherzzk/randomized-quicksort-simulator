@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101c2b">
+    <title>Randomized Quicksort Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <div class="brand-mark" aria-hidden="true">Q<span>·</span></div>
+        <div>
+          <p class="eyebrow">Algorithm lab</p>
+          <h1>Randomized Quicksort</h1>
+          <p class="subtitle">One sequence. Ten pivot paths. See how the work changes.</p>
+        </div>
+      </header>
+
+      <main>
+        <section class="intro-grid" aria-label="Input and statistics">
+          <div class="panel input-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">01 / Set up</p>
+                <h2>Your sequence</h2>
+              </div>
+              <span class="pill">16 distinct integers</span>
+            </div>
+            <label for="sequence-input">Enter values from 1 to 99, separated by commas or spaces.</label>
+            <textarea id="sequence-input" rows="3" spellcheck="false" placeholder="42, 7, 91, 3, 65, 24, 88, 12, 56, 1, 73, 38, 99, 17, 50, 81"></textarea>
+            <div class="input-footer">
+              <span id="value-count">0 / 16 values</span>
+              <span>Order is preserved in each tree node.</span>
+            </div>
+            <div class="actions">
+              <button id="generate-button" class="button button-secondary" type="button">Generate 16 Numbers</button>
+              <button id="sort-button" class="button button-primary" type="button">Run 10 Sorts <span aria-hidden="true">→</span></button>
+            </div>
+            <p id="message" class="message" role="alert" hidden></p>
+          </div>
+
+          <div class="panel stats-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Live server totals</p>
+                <h2>Since server start</h2>
+              </div>
+              <span class="pulse" aria-hidden="true"></span>
+            </div>
+            <p class="stats-explainer">Counts include every successful run handled by this server process.</p>
+            <dl class="stats-list">
+              <div><dt>Successful runs</dt><dd id="stat-runs">—</dd></div>
+              <div><dt>Total comparisons</dt><dd id="stat-comparisons">—</dd></div>
+              <div><dt>Average per run</dt><dd id="stat-average">—</dd></div>
+            </dl>
+            <p class="stats-footnote">Totals reset when the server restarts.</p>
+          </div>
+        </section>
+
+        <section class="results-section" aria-label="Batch results">
+          <div class="results-heading">
+            <div>
+              <p class="eyebrow">02 / Compare</p>
+              <h2>Ten runs, one input</h2>
+              <p>Choose a run to build and inspect its recursion tree.</p>
+            </div>
+            <span id="batch-badge" class="pill" hidden>Current batch</span>
+          </div>
+          <div class="results-grid">
+            <div class="panel runs-panel">
+              <h3>Runs</h3>
+              <div id="runs-empty" class="empty-state">Your run results will appear here.</div>
+              <ol id="runs-list" class="runs-list" aria-label="Quicksort runs"></ol>
+            </div>
+            <div class="panel tree-panel">
+              <div class="tree-panel-heading">
+                <div>
+                  <h3 id="tree-title">Recursion tree</h3>
+                  <p id="tree-summary" class="tree-summary"></p>
+                </div>
+              </div>
+              <div id="tree-empty" class="empty-state tree-empty">Select a run to see its pivot choices and Left / Right branches.</div>
+              <div id="tree-container" class="tree-container" aria-label="Selected run recursion tree"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer>Each pivot compares once with every other value in its subarray.</footer>
+    </div>
+  </body>
+</html>
