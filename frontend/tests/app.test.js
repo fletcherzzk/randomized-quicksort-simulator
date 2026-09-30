@@ -49,7 +49,17 @@ function response(body, status = 200) {
 }
 
 const sequence = [42, 7, 91, 3, 65, 24, 88, 12, 56, 1, 73, 38, 99, 17, 50, 81];
-const tree = { subarray: sequence, pivot: 42, left: null, right: null };
+const tree = {
+  subarray: sequence,
+  pivot: 42,
+  left: {
+    subarray: [7, 3],
+    pivot: 7,
+    left: { subarray: [3], pivot: 3, left: null, right: null },
+    right: null,
+  },
+  right: { subarray: [91], pivot: 91, left: null, right: null },
+};
 const runs = Array.from({ length: 10 }, (_, index) => ({
   sorted_sequence: [...sequence].sort((a, b) => a - b),
   comparisons: 60 + index,
@@ -57,6 +67,10 @@ const runs = Array.from({ length: 10 }, (_, index) => ({
 }));
 const stats = { total_runs: 10, total_comparisons: 645, average_comparisons: 64.5 };
 const tick = () => new Promise((resolve) => setImmediate(resolve));
+function elementsWithClass(root, className) {
+  return [root, ...root.children.flatMap((child) => elementsWithClass(child, className))]
+    .filter((element) => element.className === className);
+}
 
 test("generation, selection, editing, and a new batch manage only the current tree", async () => {
   const requests = [];
@@ -84,6 +98,14 @@ test("generation, selection, editing, and a new batch manage only the current tr
   e["runs-list"].children[2].children[0].click();
   assert.equal(e["tree-container"].children.length, 1);
   assert.match(e["tree-summary"].textContent, /62 comparisons/);
+  assert.deepEqual(
+    elementsWithClass(e["tree-container"], "branch-label").map((label) => label.textContent),
+    ["Left · Level 1", "Left · Level 2", "Right · Level 2", "Right · Level 1"],
+  );
+  assert.equal(
+    elementsWithClass(e["tree-container"], "node-heading")[0].children[0].textContent,
+    "Subarray · Level 0",
+  );
   assert.equal(requests.length, requestCount);
 
   e["sequence-input"].value = sequence.slice().reverse().join(", ");

@@ -1,6 +1,6 @@
 "use strict";
 
-const apiBaseUrl = (window.QUICKSORT_API_BASE_URL || "http://127.0.0.1:5000").replace(/\/$/, "");
+const apiBaseUrl = (window.QUICKSORT_API_BASE_URL || "https://randomized-quicksort-backend.onrender.com").replace(/\/$/, "");
 const input = document.querySelector("#sequence-input");
 const generateButton = document.querySelector("#generate-button");
 const sortButton = document.querySelector("#sort-button");
@@ -126,7 +126,7 @@ function renderRunList() {
   });
 }
 
-function makeTreeNode(tree) {
+function makeTreeNode(tree, level = 0) {
   const item = document.createElement("li");
   const card = document.createElement("div");
   card.className = "tree-node";
@@ -134,7 +134,7 @@ function makeTreeNode(tree) {
   const heading = document.createElement("div");
   heading.className = "node-heading";
   const title = document.createElement("strong");
-  title.textContent = tree.subarray.length === 1 ? "Leaf" : "Subarray";
+  title.textContent = `${tree.subarray.length === 1 ? "Leaf" : "Subarray"} · Level ${level}`;
   const pivotLabel = document.createElement("span");
   pivotLabel.className = "pivot-label";
   pivotLabel.textContent = `Pivot ${tree.pivot}`;
@@ -160,11 +160,11 @@ function makeTreeNode(tree) {
       branch.className = "tree-branch";
       const branchLabel = document.createElement("span");
       branchLabel.className = "branch-label";
-      branchLabel.textContent = side;
+      branchLabel.textContent = `${side} · Level ${level + 1}`;
       branch.append(branchLabel);
       if (child) {
         const childList = document.createElement("ul");
-        childList.append(makeTreeNode(child));
+        childList.append(makeTreeNode(child, level + 1));
         branch.append(childList);
       } else {
         const empty = document.createElement("span");
