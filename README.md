@@ -1,3 +1,5 @@
+Half written by Codex, but I read the code, added the details and wrote some parts. 
+
 # Randomized Quicksort Visualizer
 
 A static frontend and Flask API for comparing ten independent randomized quicksort runs on the same sequence of 16 distinct integers from 1 through 99.

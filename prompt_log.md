@@ -4,6 +4,8 @@ model: GPT 6-sol high (25% of weekly tokens)
 
 
 First, I spent lots of time writing a spec (practicing specc-driven development)
+I used AI for generating this spec, but I read ALL of it, changed a lot and made sure that AI is not restricting the possible ways of implementing this and the things that AI suggested were indeed what I want.
+
 
 # Randomized Quicksort Visualizer — Project Specification
 
@@ -133,3 +135,21 @@ Write a README explaining what the backend does, how to run both parts locally, 
 ## Initial Scope
 
 Keep the interface simple. Do not add per-comparison animation, per-node comparison labels, accounts, persistent histories, seed controls, or parallel quicksort. Prioritize correct counting, clear Left / Right branches, useful errors, working frontend–backend communication, and completing the deployment and submission.
+
+
+
+
+
+
+
+For changes for deploy
+[https://randomized-quicksort-backend.onrender.com](https://randomized-quicksort-backend.onrender.com)
+I have deployed the backend, and render gave me the url above, please update the frontend to use this URL instead of the local backend URL, while keeping the existing API endpoint paths unchanged.
+
+
+
+
+
+Final change
+
+For the frontend, please also add number next to left or right, which shows which layer the subarray is on (i.e. the height of that subarray), so that the user can understand the structure easier (since we don't have an actual tree)!
