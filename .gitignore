@@ -1,0 +1,5 @@
+backend/.venv/
+backend/.deps/
+**/__pycache__/
+*.py[cod]
+.DS_Store
